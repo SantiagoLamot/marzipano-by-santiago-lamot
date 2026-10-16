@@ -98,6 +98,7 @@ Doble click en **`Abrir demo (Mac).command`** o **`Abrir demo (Windows).bat`**.
 | [Guía del editor](docs/GUIA-EDITOR.md) | Cómo armar, probar, compartir y exportar un tour. |
 | [Formato del ZIP exportado](docs/FORMATO-EXPORT.md) | Qué hay en el ZIP, compatibilidad con el Marzipano Tool y sistemas que lo leen (por ejemplo WordPress). |
 | [Desarrollo](docs/DESARROLLO.md) | Arquitectura, API del servidor, cómo compilar el motor y cómo probar. |
+| [Hoja de ruta](docs/HOJA-DE-RUTA.md) | Funciones que tienen las apps líderes en 2026 y cómo sumarlas, por prioridad. |
 | [Kit para tours](kit-para-tours/LEEME.md) | Aplicar la transición caminar a un ZIP exportado por el Marzipano Tool. |
 
 ---
