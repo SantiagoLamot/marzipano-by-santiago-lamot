@@ -1,0 +1,15 @@
+#!/bin/bash
+# Compila dist/marzipano.js (versión propia con transición "caminar").
+set -e
+cd "`dirname $0`/.."
+PATH=node_modules/.bin:$PATH
+VERSION="$(node -p "require('./package.json').version")-walk"
+mkdir -p dist
+sed s/VERSION_STRING/$VERSION/ src/preamble.js > dist/preamble.js
+browserify --noparse=node_modules/**/*.js -s Marzipano -o dist/browserified.js src/index.js
+uglifyjs --compress --mangle -o dist/uglified.js dist/browserified.js
+cat dist/preamble.js dist/uglified.js > dist/marzipano.js
+cp dist/browserified.js dist/marzipano.debug.js
+rm dist/preamble.js dist/browserified.js dist/uglified.js
+cp LICENSE dist/LICENSE.txt
+echo "OK -> dist/marzipano.js ($VERSION)"

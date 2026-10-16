@@ -1,0 +1,68 @@
+/* =====
+   Modo "caminar" (estilo Matterport)
+   ========================================================================== */
+
+/* Disco de enlace apoyado en el piso */
+.floor-hotspot {
+  width: 240px;
+  height: 240px;
+  cursor: pointer;
+}
+.floor-hotspot-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 6px solid rgba(255,255,255,0.95);
+  background: radial-gradient(circle, rgba(255,255,255,0.55) 0 18%, rgba(255,255,255,0.18) 19% 100%);
+  box-shadow: 0 0 18px rgba(0,0,0,0.35), inset 0 0 18px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.floor-hotspot:hover .floor-hotspot-disc {
+  transform: scale(1.15);
+  border-color: #fff;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0 20%, rgba(255,255,255,0.35) 21% 100%);
+}
+/* El tooltip se muestra "de pie" sobre el disco (contrarrotado en JS no hace falta:
+   se oculta en el piso y se muestra como etiqueta simple al pasar el mouse) */
+.floor-hotspot-tooltip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(20,20,20,0.75);
+  color: #fff;
+  font: 600 28px/1.2 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.no-touch .floor-hotspot:hover .floor-hotspot-tooltip { opacity: 1; }
+
+/* Cursor que sigue al mouse en el piso */
+.floor-cursor {
+  width: 170px;
+  height: 170px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.floor-cursor.visible { opacity: 0.55; }
+.floor-cursor.visible.active { opacity: 0.95; }
+.floor-cursor-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  box-shadow: 0 0 12px rgba(0,0,0,0.4);
+}
+.floor-cursor.active .floor-cursor-disc {
+  background: rgba(255,255,255,0.22);
+}
+
+/* Durante la caminata: sin interacción con hotspots ni cursor */
+body.walking .hotspot,
+body.walking .floor-cursor { pointer-events: none; }
+body.walking #pano { cursor: progress; }

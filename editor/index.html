@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crear tour 360</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+<!-- Pantalla de inicio: elegir o crear un tour -->
+<section id="inicio" class="pantalla">
+  <div class="inicio-caja">
+    <h1>Tours 360</h1>
+    <p class="sub">Creá un recorrido con tus fotos 360 y la transición caminar.</p>
+
+    <form id="formNuevo" class="nuevo">
+      <input id="nombreNuevo" type="text" placeholder="Nombre del tour nuevo (ej: Casa Palermo)" autocomplete="off" required>
+      <button type="submit" class="primario">Crear tour</button>
+    </form>
+
+    <h2 id="tituloLista" hidden>Tus tours</h2>
+    <ul id="listaTours" class="lista-tours"></ul>
+    <p id="sinApi" class="aviso" hidden>
+      El editor necesita su servidor para poder guardar. Cerrá esta pestaña y abrilo con
+      doble click en <b>Crear tour (Mac).command</b> o <b>Crear tour (Windows).bat</b>.
+    </p>
+  </div>
+</section>
+
+<!-- Editor de un tour -->
+<section id="editor" class="pantalla" hidden>
+  <header class="barra">
+    <button id="volver" class="boton-texto" title="Volver a la lista de tours">‹ Tours</button>
+    <input id="nombreTour" class="nombre-tour" type="text" title="Nombre del tour">
+    <span id="estadoGuardado" class="estado"></span>
+    <span class="espacio"></span>
+    <label class="interruptor" title="La cámara gira sola cuando nadie la toca">
+      <input id="autorotar" type="checkbox"> Giro automático
+    </label>
+    <button id="exportarZip" title="Descarga el tour en el mismo formato de ZIP que el Marzipano Tool">Exportar ZIP</button>
+    <button id="verTour" class="primario">Ver tour ↗</button>
+  </header>
+
+  <div class="cuerpo">
+    <aside class="lateral">
+      <div class="lateral-titulo">
+        <span>Fotos</span>
+        <label class="calidad" title="Tamaño con el que se guardan las fotos nuevas">
+          <select id="calidad">
+            <option value="4096">Normal</option>
+            <option value="6144">Alta</option>
+            <option value="8192">Máxima</option>
+          </select>
+        </label>
+      </div>
+      <ul id="listaEscenas" class="lista-escenas"></ul>
+      <label class="boton-subir">
+        <input id="archivos" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+        + Agregar fotos 360
+      </label>
+      <p class="ayuda">También podés arrastrar las fotos a la ventana. Tienen que ser
+        equirectangulares (el doble de anchas que de altas), como las que exporta cualquier cámara 360.</p>
+    </aside>
+
+    <main class="centro">
+      <div id="visor"></div>
+      <div id="vacio" class="vacio" hidden>
+        <p>Agregá tus fotos 360 para empezar.</p>
+      </div>
+      <div class="herramientas" id="herramientas" hidden>
+        <button id="agregarEnlace" title="Enlace para caminar a otra foto">+ Enlace</button>
+        <button id="agregarInfo" title="Cartel con información">+ Info</button>
+        <button id="vistaInicial" title="Al entrar a esta foto se mira hacia donde estás mirando ahora">Usar esta vista al entrar</button>
+      </div>
+      <div id="pista" class="pista" hidden></div>
+    </main>
+
+    <aside class="panel" id="panel"></aside>
+  </div>
+</section>
+
+<div id="soltar" class="soltar" hidden><div>Soltá las fotos 360 acá</div></div>
+<div id="aviso" class="toast" hidden></div>
+
+<div id="exportando" class="cubierta" hidden>
+  <div class="caja-progreso">
+    <h3>Exportando el tour</h3>
+    <p id="exportandoTexto">Preparando…</p>
+    <div class="barra-progreso"><div id="exportandoBarra"></div></div>
+    <p class="nota">No cierres esta pestaña. Las fotos se cortan en cubos igual que en el Marzipano Tool, puede tardar un poco.</p>
+  </div>
+</div>
+
+<script src="/kit-para-tours/marzipano.js"></script>
+<script src="exportar.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

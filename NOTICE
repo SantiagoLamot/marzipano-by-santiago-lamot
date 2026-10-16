@@ -1,0 +1,17 @@
+Marzipano by Santiago Lamot
+Copyright 2026 Santiago Lamot
+
+Basado en Marzipano (https://github.com/google/marzipano)
+Copyright 2016 Google Inc. Licensed under the Apache License, Version 2.0.
+
+Modificaciones y agregados de Santiago Lamot (Apache License, Version 2.0):
+  - Transición "caminar" (marzipano-walk/src/walk.js, Viewer#walkTo)
+  - Visor de tours (kit-para-tours/index.js) y estilos (marzipano-walk/demo/style.css)
+  - Editor de tours y exportador a ZIP (editor/)
+  - Servidores locales y lanzadores (servidor.js, servidor.ps1, *.command, *.bat)
+
+Incluye, sin modificar, en kit-para-tours/formato-tool/:
+  - screenfull (c) Sindre Sorhus, MIT License
+  - bowser (c) Dustin Diaz, MIT License
+  - Reset CSS v2.0 de Eric Meyer, dominio público
+  - README.txt y LICENSE.txt del Marzipano Tool (c) Google Inc.

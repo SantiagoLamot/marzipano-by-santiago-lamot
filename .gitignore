@@ -1,0 +1,18 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Dependencias y builds del motor (ver marzipano-walk/.gitignore)
+node_modules/
+
+# Tours creados con el editor: son fotos y datos personales.
+# Para versionar un tour, quitá esta línea o usá: git add -f tours/<tour>
+tours/*
+!tours/LEEME.md
+
+# ZIPs exportados y ejemplos de clientes
+*.zip
+ejemplo export/
+
+# Temporales del servidor al guardar
+*.subiendo

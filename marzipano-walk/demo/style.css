@@ -1,0 +1,719 @@
+/* ==========================================================================
+   Visor de tours — estilo moderno (paneles translúcidos, íconos de línea).
+   Mismo HTML que el Marzipano Tool: solo cambia el aspecto.
+   ========================================================================== */
+
+:root {
+  --vidrio: rgba(18, 20, 26, 0.55);
+  --vidrio-fuerte: rgba(18, 20, 26, 0.78);
+  --vidrio-borde: rgba(255, 255, 255, 0.14);
+  --vidrio-hover: rgba(255, 255, 255, 0.12);
+  --texto: #fff;
+  --texto-2: rgba(255, 255, 255, 0.68);
+  --sombra: 0 8px 32px rgba(0, 0, 0, 0.28);
+  --margen: 16px;
+  --boton: 44px;
+  --fuente: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Íconos de línea (reemplazan a los PNG de img/ sin tocar el HTML) */
+  --i-lista: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 6h16M4 12h16M4 18h10'/%3E%3C/svg%3E");
+  --i-cerrar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 6l12 12M18 6L6 18'/%3E%3C/svg%3E");
+  --i-play: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black' stroke='black' stroke-width='1.5' stroke-linejoin='round'%3E%3Cpath d='M8 5.5v13l10.5-6.5z'/%3E%3C/svg%3E");
+  --i-pausa: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M9 6v12M15 6v12'/%3E%3C/svg%3E");
+  --i-ampliar: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'/%3E%3C/svg%3E");
+  --i-reducir: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5'/%3E%3C/svg%3E");
+  --i-info: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M12 11v7M12 6.5v.01'/%3E%3C/svg%3E");
+  --i-flecha: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 19V5M6 11l6-6 6 6'/%3E%3C/svg%3E");
+  --i-arriba: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 15l6-6 6 6'/%3E%3C/svg%3E");
+  --i-abajo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  --i-izquierda: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 6l-6 6 6 6'/%3E%3C/svg%3E");
+  --i-derecha: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6l6 6-6 6'/%3E%3C/svg%3E");
+  --i-mas: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E");
+  --i-menos: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M5 12h14'/%3E%3C/svg%3E");
+}
+
+.mobile { --margen: 12px; }
+
+* {
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--fuente);
+  font-size: 16px;
+  background-color: #000;
+  color: var(--texto);
+  -webkit-font-smoothing: antialiased;
+}
+
+a, a:hover, a:active, a:visited {
+  text-decoration: none;
+  color: inherit;
+}
+
+#pano {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Superficie translúcida común */
+#titleBar .sceneName,
+#sceneListToggle,
+#autorotateToggle,
+#fullscreenToggle,
+#sceneList,
+.viewControlButton,
+.link-hotspot,
+.info-hotspot .info-hotspot-header,
+.info-hotspot .info-hotspot-text {
+  background-color: var(--vidrio);
+  border: 1px solid var(--vidrio-borde);
+  box-shadow: var(--sombra);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+}
+
+/* Íconos: el PNG queda oculto y se pinta el ícono de línea con una máscara */
+#sceneListToggle .icon,
+#autorotateToggle .icon,
+#fullscreenToggle .icon,
+.viewControlButton .icon,
+.link-hotspot-icon,
+.info-hotspot-icon,
+.info-hotspot-close-icon {
+  object-fit: none;
+  object-position: -99999px -99999px;
+  background-color: currentColor;
+  -webkit-mask: var(--i) center / contain no-repeat;
+  mask: var(--i) center / contain no-repeat;
+}
+
+/* ---------- Título ---------- */
+
+#titleBar {
+  position: absolute;
+  top: var(--margen);
+  left: 0;
+  right: 0;
+  height: var(--boton);
+  text-align: center;
+  pointer-events: none;
+}
+
+#titleBar .sceneName {
+  display: inline-block;
+  max-width: calc(100% - 2 * var(--margen) - 2 * (2 * var(--boton) + 8px) - 16px);
+  height: var(--boton);
+  margin: 0;
+  padding: 0 22px;
+  border-radius: calc(var(--boton) / 2);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: calc(var(--boton) - 2px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ---------- Botones redondos ---------- */
+
+#sceneListToggle,
+#autorotateToggle,
+#fullscreenToggle {
+  position: absolute;
+  top: var(--margen);
+  width: var(--boton);
+  height: var(--boton);
+  border-radius: 50%;
+  color: var(--texto);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.no-touch #sceneListToggle:hover,
+.no-touch #autorotateToggle:hover,
+.no-touch #fullscreenToggle:hover,
+.no-touch .viewControlButton:hover {
+  background-color: var(--vidrio-fuerte);
+  transform: scale(1.06);
+}
+
+#sceneListToggle:active,
+#autorotateToggle:active,
+#fullscreenToggle:active,
+.viewControlButton:active {
+  transform: scale(0.94);
+}
+
+#sceneListToggle .icon,
+#autorotateToggle .icon,
+#fullscreenToggle .icon,
+.viewControlButton .icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+}
+
+#sceneListToggle { left: var(--margen); }
+#fullscreenToggle { right: var(--margen); display: none; }
+#autorotateToggle { right: var(--margen); display: block; }
+body.fullscreen-enabled #fullscreenToggle { display: block; }
+body.fullscreen-enabled #autorotateToggle { right: calc(var(--margen) + var(--boton) + 8px); }
+
+#sceneListToggle .icon.off { --i: var(--i-lista); }
+#sceneListToggle .icon.on { --i: var(--i-cerrar); }
+#autorotateToggle .icon.off { --i: var(--i-play); }
+#autorotateToggle .icon.on { --i: var(--i-pausa); }
+#fullscreenToggle .icon.off { --i: var(--i-ampliar); }
+#fullscreenToggle .icon.on { --i: var(--i-reducir); }
+
+#sceneListToggle .icon.on,
+#autorotateToggle .icon.on,
+#fullscreenToggle .icon.on { display: none; }
+#sceneListToggle .icon.off,
+#autorotateToggle .icon.off,
+#fullscreenToggle .icon.off { display: block; }
+#sceneListToggle.enabled .icon.on,
+#autorotateToggle.enabled .icon.on,
+#fullscreenToggle.enabled .icon.on { display: block; }
+#sceneListToggle.enabled .icon.off,
+#autorotateToggle.enabled .icon.off,
+#fullscreenToggle.enabled .icon.off { display: none; }
+
+body #sceneListToggle.enabled,
+.no-touch #sceneListToggle.enabled:hover { background-color: rgba(255, 255, 255, 0.92); color: #111; }
+
+/* ---------- Lista de fotos ---------- */
+
+#sceneList {
+  position: absolute;
+  top: calc(var(--margen) + var(--boton) + 10px);
+  left: var(--margen);
+  width: 260px;
+  max-height: calc(100% - 2 * var(--margen) - var(--boton) - 10px);
+  padding: 6px;
+  border-radius: 18px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px) scale(0.98);
+  transform-origin: top left;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s 0.25s;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.25) transparent;
+}
+
+#sceneList.enabled {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s 0s;
+}
+
+.mobile #sceneList {
+  width: auto;
+  right: var(--margen);
+}
+
+#sceneList .scenes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: foto;
+}
+
+#sceneList .scene {
+  display: block;
+  counter-increment: foto;
+}
+
+#sceneList .scene .text {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px 9px 9px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--texto-2);
+  transition: background-color 0.15s, color 0.15s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#sceneList .scene .text::before {
+  content: counter(foto);
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 26px;
+  text-align: center;
+  color: var(--texto);
+}
+
+.mobile #sceneList .scene .text {
+  padding-top: 11px;
+  padding-bottom: 11px;
+  font-size: 15px;
+}
+
+.no-touch #sceneList .scene:hover .text {
+  background-color: var(--vidrio-hover);
+  color: var(--texto);
+}
+
+#sceneList .scene.current .text {
+  background-color: rgba(255, 255, 255, 0.92);
+  color: #111;
+}
+
+#sceneList .scene.current .text::before {
+  background: #111;
+  color: #fff;
+}
+
+/* Una sola foto: sin lista */
+body.single-scene #sceneList,
+body.single-scene #sceneListToggle {
+  display: none;
+}
+
+/* ---------- Enlaces (no apoyados en el piso) ---------- */
+
+.link-hotspot {
+  width: 52px;
+  height: 52px;
+  margin-left: -26px;
+  margin-top: -26px;
+  border-radius: 50%;
+  color: var(--texto);
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.no-touch .link-hotspot:hover {
+  transform: scale(1.1);
+  background-color: var(--vidrio-fuerte);
+}
+
+.mobile .link-hotspot {
+  width: 60px;
+  height: 60px;
+  margin-left: -30px;
+  margin-top: -30px;
+}
+
+.link-hotspot-icon {
+  --i: var(--i-flecha);
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+  cursor: pointer;
+}
+
+.link-hotspot-tooltip {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 8px;
+  max-width: 260px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background-color: var(--vidrio-fuerte);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -4px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.no-touch .link-hotspot:hover .link-hotspot-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.tooltip-fallback .link-hotspot-tooltip { display: none; }
+.no-touch .tooltip-fallback .link-hotspot:hover .link-hotspot-tooltip { display: block; }
+
+/* ---------- Carteles de información ---------- */
+
+.info-hotspot {
+  line-height: 1.35;
+  color: var(--texto);
+}
+
+.info-hotspot .info-hotspot-header {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin: -20px 0 0 -20px;
+  border-radius: 20px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(.2,.8,.2,1) 0.35s, background-color 0.2s;
+}
+
+.mobile .info-hotspot .info-hotspot-header {
+  width: 48px;
+  height: 48px;
+  margin: -24px 0 0 -24px;
+  border-radius: 24px;
+}
+
+.desktop.no-touch .info-hotspot .info-hotspot-header:hover,
+.desktop .info-hotspot.visible .info-hotspot-header {
+  width: 300px;
+  background-color: var(--vidrio-fuerte);
+  transition: width 0.3s cubic-bezier(.2,.8,.2,1), background-color 0.2s;
+}
+
+.info-hotspot .info-hotspot-icon-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+}
+
+.mobile .info-hotspot .info-hotspot-icon-wrapper {
+  width: 46px;
+  height: 46px;
+}
+
+.info-hotspot-icon {
+  --i: var(--i-info);
+  width: 60%;
+  height: 60%;
+  margin: 20%;
+}
+
+.info-hotspot .info-hotspot-title-wrapper {
+  position: absolute;
+  top: 0;
+  left: 40px;
+  right: 40px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.desktop.no-touch .info-hotspot .info-hotspot-header:hover .info-hotspot-title-wrapper,
+.desktop .info-hotspot.visible .info-hotspot-title-wrapper {
+  opacity: 1;
+  transition: opacity 0.2s 0.15s;
+}
+
+.info-hotspot .info-hotspot-title {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.info-hotspot .info-hotspot-close-wrapper {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0s 0.2s;
+}
+
+.desktop .info-hotspot.visible .info-hotspot-close-wrapper {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s 0.2s, visibility 0s 0s;
+}
+
+.info-hotspot-close-icon {
+  --i: var(--i-cerrar);
+  width: 50%;
+  height: 50%;
+  margin: 25%;
+}
+
+.info-hotspot .info-hotspot-text {
+  position: absolute;
+  top: 28px;
+  left: -20px;
+  width: 300px;
+  max-height: 240px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background-color: var(--vidrio-fuerte);
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-line;
+  overflow-y: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s, transform 0.2s, visibility 0s 0.2s;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.info-hotspot .info-hotspot-text:empty { display: none; }
+
+.desktop .info-hotspot.visible .info-hotspot-text {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.25s 0.2s, transform 0.25s 0.2s, visibility 0s 0s;
+}
+
+/* Cartel en celular: hoja inferior */
+
+.desktop .info-hotspot-modal { display: none; }
+
+.info-hotspot-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 11000 !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--margen);
+  background-color: rgba(0, 0, 0, 0.35);
+  line-height: 1.45;
+  color: var(--texto);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0s 0.25s;
+}
+
+.info-hotspot-modal.visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.25s ease, visibility 0s 0s;
+}
+
+.info-hotspot-modal .info-hotspot-header,
+.info-hotspot-modal .info-hotspot-text {
+  background-color: var(--vidrio-fuerte);
+  border: 1px solid var(--vidrio-borde);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  transform: translateY(24px);
+  transition: transform 0.3s cubic-bezier(.2,.8,.2,1);
+}
+
+.info-hotspot-modal.visible .info-hotspot-header,
+.info-hotspot-modal.visible .info-hotspot-text {
+  transform: none;
+}
+
+.info-hotspot-modal .info-hotspot-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 56px;
+  padding: 0 8px;
+  border-radius: 20px 20px 0 0;
+  border-bottom: none;
+}
+
+.info-hotspot-modal .info-hotspot-header:last-child { border-radius: 20px; }
+
+.info-hotspot-modal .info-hotspot-icon-wrapper {
+  flex: none;
+  width: 40px;
+  height: 40px;
+}
+
+.info-hotspot-modal .info-hotspot-title-wrapper {
+  flex: 1;
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.info-hotspot-modal .info-hotspot-title {
+  font-size: 16px;
+  font-weight: 600;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.info-hotspot-modal .info-hotspot-close-wrapper {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+}
+
+.info-hotspot-modal .info-hotspot-text {
+  max-height: 50vh;
+  padding: 4px 20px 20px;
+  border-radius: 0 0 20px 20px;
+  border-top: none;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-line;
+  overflow-y: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.info-hotspot-modal .info-hotspot-text:empty { display: none; }
+
+/* ---------- Botones de dirección (si se activan) ---------- */
+
+.viewControlButton {
+  display: none;
+  position: absolute;
+  bottom: var(--margen);
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--texto);
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+body.view-control-buttons .viewControlButton { display: block; }
+
+@media (max-width: 600px) {
+  body.view-control-buttons .viewControlButton { display: none; }
+}
+
+.viewControlButton-1 { margin-left: -142px; }
+.viewControlButton-2 { margin-left: -94px; }
+.viewControlButton-3 { margin-left: -46px; }
+.viewControlButton-4 { margin-left: 6px; }
+.viewControlButton-5 { margin-left: 54px; }
+.viewControlButton-6 { margin-left: 102px; }
+
+#viewUp .icon { --i: var(--i-arriba); }
+#viewDown .icon { --i: var(--i-abajo); }
+#viewLeft .icon { --i: var(--i-izquierda); }
+#viewRight .icon { --i: var(--i-derecha); }
+#viewIn .icon { --i: var(--i-mas); }
+#viewOut .icon { --i: var(--i-menos); }
+
+/* Sin soporte de desenfoque: paneles más opacos */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --vidrio: rgba(18, 20, 26, 0.85); --vidrio-fuerte: rgba(18, 20, 26, 0.92); }
+}
+
+/* ==========================================================================
+   Modo "caminar" (estilo Matterport)
+   ========================================================================== */
+
+/* Disco de enlace apoyado en el piso */
+.floor-hotspot {
+  width: 240px;
+  height: 240px;
+  cursor: pointer;
+}
+.floor-hotspot-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 6px solid rgba(255,255,255,0.95);
+  background: radial-gradient(circle, rgba(255,255,255,0.55) 0 18%, rgba(255,255,255,0.18) 19% 100%);
+  box-shadow: 0 0 18px rgba(0,0,0,0.35), inset 0 0 18px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.floor-hotspot:hover .floor-hotspot-disc {
+  transform: scale(1.15);
+  border-color: #fff;
+  background: radial-gradient(circle, rgba(255,255,255,0.8) 0 20%, rgba(255,255,255,0.35) 21% 100%);
+}
+/* El tooltip se muestra "de pie" sobre el disco (contrarrotado en JS no hace falta:
+   se oculta en el piso y se muestra como etiqueta simple al pasar el mouse) */
+.floor-hotspot-tooltip {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(18,20,26,0.78);
+  color: #fff;
+  font: 600 28px/1.2 var(--fuente);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.no-touch .floor-hotspot:hover .floor-hotspot-tooltip { opacity: 1; }
+
+/* Cursor que sigue al mouse en el piso */
+.floor-cursor {
+  width: 170px;
+  height: 170px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.floor-cursor.visible { opacity: 0.55; }
+.floor-cursor.visible.active { opacity: 0.95; }
+.floor-cursor-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  box-shadow: 0 0 12px rgba(0,0,0,0.4);
+}
+.floor-cursor.active .floor-cursor-disc {
+  background: rgba(255,255,255,0.22);
+}
+
+/* Durante la caminata: sin interacción con hotspots ni cursor */
+body.walking .hotspot,
+body.walking .floor-cursor { pointer-events: none; }
+body.walking #pano { cursor: progress; }
