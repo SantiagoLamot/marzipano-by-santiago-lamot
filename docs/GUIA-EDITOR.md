@@ -57,12 +57,20 @@ las fotos nuevas.
 Es el paso más importante para que la caminata se sienta natural.
 
 1. Elegí una foto en la lista de la izquierda.
-2. Tocá **+ Enlace**.
+2. Tocá **+ Enlace**. Queda activado hasta que lo vuelvas a tocar o apretes Esc.
 3. Hacé click **en el piso, justo donde estaba parada la cámara cuando sacaste
    la otra foto**.
-4. En el panel derecho, en **Camina hacia**, elegí a qué foto lleva.
-5. Si aparece el aviso amarillo, tocá **"Ir a … y ponerlo"** y hacé lo mismo en
+4. Al lado del disco aparece **¿A qué foto lleva?**: elegí la foto (con el mouse,
+   o con las flechas y Enter). Si el tour tiene solo dos fotos, se enlaza directo.
+5. Seguí haciendo click para poner más enlaces, también después de cambiar de
+   foto en la lista. Si hiciste click en el lugar equivocado, hacé click en
+   otro lado y el disco se mueve ahí.
+6. Si aparece el aviso amarillo, tocá **"Ir a … y ponerlo"** y hacé lo mismo en
    la otra foto para el **camino de vuelta**.
+
+En el menú, **tiene enlace hacia acá** marca las fotos desde las que ya se llega
+a esta: el enlace que falta es el de vuelta, y viene elegido de entrada.
+**ya enlazada** marca las fotos a las que esta ya lleva.
 
 > **¿Por qué hace falta el enlace de vuelta?** Cuando caminás de A a B, el visor
 > usa el enlace de B hacia A para saber hacia dónde mirar al llegar. Sin vuelta,
@@ -71,7 +79,9 @@ Es el paso más importante para que la caminata se sienta natural.
 - **Mover un enlace:** arrastrá el disco.
 - **Borrar:** seleccionalo y tocá **Borrar enlace** (o la tecla Suprimir).
 - **⚠ en la lista:** esa foto no tiene enlaces o tiene enlaces sin vuelta.
-- **Esc:** cancela la colocación o quita la selección.
+- **Cambiar a qué foto lleva:** seleccioná el enlace y cambiá **Camina hacia**
+  en el panel derecho.
+- **Esc:** cierra el menú; otro Esc apaga **+ Enlace** o quita la selección.
 
 ---
 
@@ -81,11 +91,26 @@ Es el paso más importante para que la caminata se sienta natural.
 |---|---|
 | **+ Info** | Cartel con título y texto. Los saltos de línea se respetan. |
 | **Usar esta vista al entrar** | Girá la foto hacia donde querés y tocalo: al abrir el tour o saltar desde la lista se mira hacia ahí. |
-| **↑ ↓** en la lista | Cambia el orden. **La primera foto es donde empieza el tour.** |
+| **Arrastrar** en la lista | Cambia el orden: tomá una foto y soltala donde quieras. **La primera foto es donde empieza el tour.** |
 | **Giro automático** | La cámara gira sola cuando nadie la toca. |
+| **Logo trípode** | Tapa el trípode en todas las fotos: difumina el piso debajo de la cámara y pone encima el logo de la inmobiliaria. Ver abajo. |
 | Nombre arriba a la izquierda | El nombre del tour, que aparece en la pestaña del navegador. |
 
 Todo se guarda solo: arriba aparece "Guardado ✓".
+
+### Logo en el trípode
+
+1. Tocá **Logo trípode** (arriba).
+2. Elegí el logo. Lo ideal es un PNG cuadrado o redondo, con fondo transparente,
+   de 1000 px o más. Si no elegís ninguno, solo se difumina el trípode.
+3. Mové **Tamaño** hasta que tape el trípode. La vista redonda muestra el piso
+   mirando hacia abajo desde el frente de la foto, así se ve el logo en el tour.
+4. Tocá **Aplicar a todas las fotos**.
+
+El logo queda estampado en la foto, así que se ve en el editor, en "Ver tour" y
+en el ZIP exportado, en cualquier visor. Las fotos que agregues después lo
+reciben solas. Las originales se guardan aparte: podés cambiar el logo o el
+tamaño cuando quieras, o tocar **Quitar logo** para dejarlas como estaban.
 
 ---
 

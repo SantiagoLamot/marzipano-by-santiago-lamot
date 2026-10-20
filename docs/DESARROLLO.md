@@ -29,6 +29,7 @@ Arquitectura, API del servidor, cómo compilar el motor y cómo probar los cambi
 | `marzipano-walk/demo/style.css` | Estilos del visor. Es la plantilla que se copia a cada tour nuevo. |
 | `editor/editor.js` | Editor: tours, fotos, hotspots, guardado automático, `index.html` de cada tour. |
 | `editor/exportar.js` | Conversión equirectangular → cubo, niveles, pedazos, calibración JPEG y ZIP. |
+| `editor/nadir.js` | Logo del trípode: difumina el nadir y estampa el logo sobre la foto equirectangular. |
 | `servidor.js` / `servidor.ps1` | Servidor estático; con `--editor` / `-Editor` suma la API de archivos. |
 
 Todo el código del editor y del visor es JavaScript sin dependencias ni paso de
@@ -46,7 +47,10 @@ tours/<tour>/
 ├── style.css             copia de marzipano-walk/demo/style.css
 ├── vendor/marzipano.js   copia de kit-para-tours/marzipano.js
 ├── img/                  íconos
-├── panos/<id>.jpg        fotos equirectangulares
+├── panos/<id>.jpg        fotos equirectangulares (con el logo del trípode, si hay)
+├── nadir/                solo si se usa el logo del trípode:
+│   ├── logo.png          el logo elegido
+│   └── originales/<id>.jpg  las fotos sin logo
 ├── servidor.js, servidor.ps1
 └── Abrir tour (Mac).command, Abrir tour (Windows).bat
 ```
@@ -65,6 +69,11 @@ Cada escena del `data.js` de un tour del editor usa `equirect` en lugar de
   "infoHotspots": []
 }
 ```
+
+Con el logo del trípode, el tour tiene `"nadir": { "logo": "nadir/logo.png", "tamano": 20 }`
+(radio en grados; `logo` es `null` si solo se difumina) y cada escena tiene
+`"original": "nadir/originales/<id>.jpg"`. El logo se estampa siempre a partir
+de la original. Ninguno de los dos campos pasa al ZIP exportado.
 
 `kit-para-tours/index.js` acepta los dos formatos: `equirect` (una sola imagen)
 o tiles del Marzipano Tool (`levels` + `tiles/`).

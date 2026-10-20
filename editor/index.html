@@ -39,6 +39,7 @@
     <label class="interruptor" title="La cámara gira sola cuando nadie la toca">
       <input id="autorotar" type="checkbox"> Giro automático
     </label>
+    <button id="logoNadir" title="Difumina el trípode en todas las fotos y pone encima el logo de la inmobiliaria">Logo trípode</button>
     <button id="exportarZip" title="Descarga el tour en el mismo formato de ZIP que el Marzipano Tool">Exportar ZIP</button>
     <button id="verTour" class="primario">Ver tour ↗</button>
   </header>
@@ -94,7 +95,38 @@
 </div>
 
 <script src="/kit-para-tours/marzipano.js"></script>
+<div id="nadirCaja" class="cubierta" hidden>
+  <div class="caja-progreso caja-nadir">
+    <h3>Logo del trípode</h3>
+    <p class="nota-arriba">Se difumina el piso donde está el trípode y encima va tu logo, en todas las fotos del tour.</p>
+    <div class="nadir-cuerpo">
+      <canvas id="nadirVista" width="520" height="520" title="Vista mirando hacia abajo"></canvas>
+      <div class="nadir-controles">
+        <label class="boton-subir">
+          <input id="nadirArchivo" type="file" accept="image/png,image/webp,image/jpeg" hidden>
+          <span id="nadirArchivoTexto">Elegir logo (PNG)</span>
+        </label>
+        <label class="campo">
+          <span>Tamaño</span>
+          <input id="nadirTamano" type="range" min="10" max="40" step="1" value="20">
+        </label>
+        <p class="nota">Ideal: un PNG cuadrado o redondo, con fondo transparente, de 1000 px o más.
+          Sin logo, solo se difumina el trípode.</p>
+        <p class="nota">La vista muestra el piso mirando hacia abajo desde el frente de la foto.</p>
+      </div>
+    </div>
+    <p id="nadirEstado" class="nota"></p>
+    <div class="botones-nadir">
+      <button id="nadirQuitar" class="peligro">Quitar logo</button>
+      <span class="espacio"></span>
+      <button id="nadirCancelar">Cancelar</button>
+      <button id="nadirAplicar" class="primario">Aplicar a todas las fotos</button>
+    </div>
+  </div>
+</div>
+
 <script src="exportar.js"></script>
+<script src="nadir.js"></script>
 <script src="editor.js"></script>
 </body>
 </html>

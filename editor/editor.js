@@ -503,7 +503,14 @@
   function irAEscena(id) {
     estado.actual = id;
     estado.seleccion = null;
-    cancelarModo();
+    cerrarMenuEnlace();
+    // El modo enlace queda activo al cambiar de foto, para seguir poniendo enlaces.
+    if (estado.modo && estado.modo.tipo === 'enlace' && escenas().length > 1) {
+      estado.modo = { tipo: 'enlace' };
+      mostrarPista();
+    } else {
+      cancelarModo();
+    }
     var e = escenaActual();
     $('vacio').hidden = !!e || estado.procesando.length > 0;
     $('herramientas').hidden = !e || !e.equirect;
@@ -533,7 +540,8 @@
     var movido = Math.abs(ev.clientX - abajo.x) + Math.abs(ev.clientY - abajo.y);
     abajo = null;
     if (movido > 5) return;
-    if (estado.modo) colocar(coordsDe(ev));
+    if (menuEnlace && !estado.modo) cerrarMenuEnlace();
+    else if (estado.modo) colocar(coordsDe(ev));
     else if (estado.seleccion) seleccionar(null);
   });
 
@@ -543,6 +551,7 @@
   function dibujarHotspots() {
     var e = escenaActual();
     if (!e || !enVisor[e.id]) return;
+    cerrarMenuEnlace();
     var contenedor = enVisor[e.id].scene.hotspotContainer();
     contenedor.listHotspots().slice().forEach(function(hs) { contenedor.destroyHotspot(hs); });
     marcas = [];
@@ -564,7 +573,8 @@
     marca.addEventListener('pointerdown', function(ev) {
       ev.stopPropagation();
       ev.preventDefault();
-      cancelarModo();
+      cerrarMenuEnlace();
+      if (estado.modo && estado.modo.tipo !== 'enlace') cancelarModo();
       seleccionar({ tipo: tipo, indice: indice });
       var inicio = { x: ev.clientX, y: ev.clientY }, movido = false;
       marca.setPointerCapture(ev.pointerId);
@@ -586,7 +596,11 @@
       marca.addEventListener('pointerup', soltar);
       marca.addEventListener('pointercancel', soltar);
     });
-    // Que el visor no gire la foto al tocar el hotspot.
+    aislar(el);
+  }
+
+  // Que el visor no gire la foto ni coloque nada al tocar el hotspot.
+  function aislar(el) {
     ['pointerdown', 'pointermove', 'pointerup', 'touchstart', 'touchmove', 'touchend', 'mousedown', 'wheel']
       .forEach(function(n) { el.addEventListener(n, function(ev) { ev.stopPropagation(); }); });
   }
@@ -610,24 +624,35 @@
     return (s.tipo === 'enlace' ? e.linkHotspots : e.infoHotspots)[s.indice] || null;
   }
 
-  // Modo "colocar": el próximo click en la foto crea el hotspot.
+  // Modo "colocar". Enlace: queda activo y cada click pone otro (pregunta a qué
+  // foto lleva). Info: el próximo click crea el cartel y termina.
   function empezarModo(modo) {
     estado.modo = modo;
     estado.seleccion = null;
     marcarSeleccion();
     visorEl.classList.add('colocando');
-    var pista = $('pista');
-    pista.hidden = false;
-    pista.textContent = modo.tipo === 'enlace'
-      ? 'Hacé click en el piso, justo donde estaba parada la cámara de la otra foto' +
-        (modo.destino ? ' («' + nombreDe(modo.destino) + '»)' : '') + '. Esc para cancelar.'
-      : 'Hacé click donde querés el cartel de información. Esc para cancelar.';
+    mostrarPista();
     actualizarHerramientas();
     dibujarPanel();
   }
 
+  function mostrarPista() {
+    var modo = estado.modo, pista = $('pista');
+    pista.hidden = false;
+    if (modo.tipo === 'info') {
+      pista.textContent = 'Hacé click donde querés el cartel de información. Esc para cancelar.';
+    } else if (modo.destino) {
+      pista.textContent = 'Hacé click en el piso, justo donde estaba parada la cámara de «' +
+        nombreDe(modo.destino) + '». Esc para terminar.';
+    } else {
+      pista.textContent = 'Hacé click en el piso, donde estaba parada la cámara de la otra foto, y elegí a qué foto lleva. ' +
+        'Podés poner varios seguidos. Esc o «+ Enlace» para terminar.';
+    }
+  }
+
   function cancelarModo() {
     estado.modo = null;
+    cerrarMenuEnlace();
     visorEl.classList.remove('colocando');
     $('pista').hidden = true;
     actualizarHerramientas();
@@ -635,25 +660,78 @@
 
   function colocar(c) {
     var e = escenaActual(), modo = estado.modo;
-    cancelarModo();
     if (modo.tipo === 'enlace') {
-      var otras = escenas().filter(function(x) { return x.id !== e.id; });
-      var libre = otras.filter(function(x) { return !enlaceA(e, x.id); })[0];
-      var destino = modo.destino || (libre || otras[0]).id;
-      e.linkHotspots.push({ yaw: c.yaw, pitch: c.pitch, rotation: 0, target: destino });
-      estado.seleccion = { tipo: 'enlace', indice: e.linkHotspots.length - 1 };
-    } else {
-      e.infoHotspots.push({ yaw: c.yaw, pitch: c.pitch, title: 'Título', text: '' });
-      estado.seleccion = { tipo: 'info', indice: e.infoHotspots.length - 1 };
+      if (!modo.destino) return preguntarDestino(e, c);
+      estado.modo = { tipo: 'enlace' };
+      mostrarPista();
+      return crearEnlace(e, c, modo.destino);
     }
+    cancelarModo();
+    e.infoHotspots.push({ yaw: c.yaw, pitch: c.pitch, title: 'Título', text: '' });
+    estado.seleccion = { tipo: 'info', indice: e.infoHotspots.length - 1 };
     dibujarHotspots();
     dibujarLista();
     dibujarPanel();
     guardar();
-    if (modo.tipo === 'info') {
-      var campo = document.querySelector('#panel input');
-      if (campo) { campo.focus(); campo.select(); }
-    }
+    var campo = document.querySelector('#panel input');
+    if (campo) { campo.focus(); campo.select(); }
+  }
+
+  function crearEnlace(e, c, destino) {
+    e.linkHotspots.push({ yaw: c.yaw, pitch: c.pitch, rotation: 0, target: destino });
+    estado.seleccion = { tipo: 'enlace', indice: e.linkHotspots.length - 1 };
+    dibujarHotspots();
+    dibujarLista();
+    dibujarPanel();
+    guardar();
+  }
+
+  // Menú junto al disco recién puesto para elegir a qué foto lleva.
+  var menuEnlace = null;   // { contenedor, hotspot }
+
+  function cerrarMenuEnlace() {
+    if (!menuEnlace) return;
+    try { menuEnlace.contenedor.destroyHotspot(menuEnlace.hotspot); } catch (err) { /* escena ya destruida */ }
+    menuEnlace = null;
+  }
+
+  function preguntarDestino(e, c) {
+    cerrarMenuEnlace();
+    var otras = escenas().filter(function(x) { return x.id !== e.id; });
+    if (otras.length === 1) return crearEnlace(e, c, otras[0].id);
+    // Sugerida: la que ya camina hacia acá (falta la vuelta), si no la primera sin enlazar.
+    var libres = otras.filter(function(x) { return !enlaceA(e, x.id); });
+    var sugerida = libres.filter(function(x) { return enlaceA(x, e.id); })[0] || libres[0] || otras[0];
+    var botones = otras.map(function(x) {
+      var yaEsta = !!enlaceA(e, x.id), vuelta = !!enlaceA(x, e.id);
+      return h('button', {
+        type: 'button',
+        class: yaEsta ? 'ya' : '',
+        onclick: function() { cerrarMenuEnlace(); crearEnlace(e, c, x.id); }
+      },
+        h('span', { class: 'n' }, x.name),
+        yaEsta ? h('small', null, 'ya enlazada') : (vuelta ? h('small', null, 'tiene enlace hacia acá') : null));
+    });
+    var menu = h('div', { class: 'menu-enlace' }, h('div', { class: 'menu-titulo' }, '¿A qué foto lleva?'), botones);
+    menu.addEventListener('keydown', function(ev) {
+      if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp') return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      var i = botones.indexOf(document.activeElement);
+      botones[(i + (ev.key === 'ArrowDown' ? 1 : -1) + botones.length) % botones.length].focus();
+    });
+    var el = h('div', { class: 'eh eh-enlace pendiente' }, h('div', { class: 'eh-marca' }), menu);
+    aislar(el);
+    var contenedor = enVisor[e.id].scene.hotspotContainer();
+    menuEnlace = { contenedor: contenedor, hotspot: contenedor.createHotspot(el, { yaw: c.yaw, pitch: c.pitch }) };
+    // Si no entra a la derecha del disco o arriba de la pista, se abre hacia el otro lado.
+    requestAnimationFrame(function() {
+      var caja = menu.getBoundingClientRect(), visor = visorEl.getBoundingClientRect();
+      var piso = $('pista').hidden ? visor.bottom : $('pista').getBoundingClientRect().top;
+      menu.classList.toggle('izquierda', caja.right > visor.right - 8);
+      menu.classList.toggle('arriba', caja.bottom > piso - 8);
+      botones[otras.indexOf(sugerida)].focus({ preventScroll: true });
+    });
   }
 
   function borrarSeleccion() {
@@ -692,6 +770,10 @@
 
   document.addEventListener('keydown', function(ev) {
     var escribiendo = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if (menuEnlace) {
+      if (ev.key === 'Escape') cerrarMenuEnlace();
+      return;
+    }
     if (ev.key === 'Escape') {
       if (estado.modo) cancelarModo();
       else if (estado.seleccion) seleccionar(null);
@@ -705,31 +787,62 @@
   // ---------------------------------------------------------------------------
   // Lista de fotos
   // ---------------------------------------------------------------------------
+  var arrastrada = null;   // índice de la foto que se está arrastrando en la lista
+
   function dibujarLista() {
     var lista = $('listaEscenas');
     lista.innerHTML = '';
     escenas().forEach(function(e, i) {
       var problema = escenaConProblemas(e);
-      lista.appendChild(h('li', {
+      var li = h('li', {
         class: e.id === estado.actual ? 'actual' : '',
+        draggable: 'true',
+        title: 'Arrastrá para cambiar el orden',
         onclick: function() { if (e.id !== estado.actual) irAEscena(e.id); }
       },
+        h('span', { class: 'agarre', 'aria-hidden': 'true' }, '⋮⋮'),
         h('span', { class: 'n' }, e.name),
         i === 0 ? h('span', { class: 'etiqueta', title: 'El tour empieza en esta foto' }, 'inicio') : null,
-        problema ? h('span', { class: 'alerta', title: e.linkHotspots.length ? 'Tiene enlaces sin vuelta' : 'No tiene enlaces' }, '⚠') : null,
-        h('span', { class: 'mover' },
-          h('button', { title: 'Subir', disabled: i === 0, onclick: function(ev) { ev.stopPropagation(); moverEscena(i, -1); } }, '↑'),
-          h('button', { title: 'Bajar', disabled: i === escenas().length - 1, onclick: function(ev) { ev.stopPropagation(); moverEscena(i, 1); } }, '↓'))
-      ));
+        problema ? h('span', { class: 'alerta', title: e.linkHotspots.length ? 'Tiene enlaces sin vuelta' : 'No tiene enlaces' }, '⚠') : null);
+      li.addEventListener('dragstart', function(ev) {
+        arrastrada = i;
+        ev.dataTransfer.effectAllowed = 'move';
+        ev.dataTransfer.setData('text/plain', e.name);
+        li.classList.add('arrastrando');
+      });
+      li.addEventListener('dragover', function(ev) {
+        if (arrastrada === null) return;
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = 'move';
+        var r = li.getBoundingClientRect(), antes = ev.clientY < r.top + r.height / 2;
+        li.classList.toggle('antes', antes);
+        li.classList.toggle('despues', !antes);
+      });
+      li.addEventListener('dragleave', function() { li.classList.remove('antes', 'despues'); });
+      li.addEventListener('drop', function(ev) {
+        if (arrastrada === null) return;
+        ev.preventDefault();
+        var r = li.getBoundingClientRect(), desde = arrastrada;
+        arrastrada = null;   // la lista se redibuja y el li arrastrado puede no recibir dragend
+        moverEscena(desde, ev.clientY < r.top + r.height / 2 ? i : i + 1);
+      });
+      li.addEventListener('dragend', function() {
+        arrastrada = null;
+        dibujarLista();
+      });
+      lista.appendChild(li);
     });
     estado.procesando.forEach(function(p) {
       lista.appendChild(h('li', { class: 'procesando' }, h('span', { class: 'n' }, 'Procesando ' + p.nombre + '…')));
     });
   }
 
-  function moverEscena(i, delta) {
-    var lista = escenas(), j = i + delta;
-    var tmp = lista[i]; lista[i] = lista[j]; lista[j] = tmp;
+  // Lleva la foto de la posición "desde" a quedar antes de la que estaba en "hasta".
+  function moverEscena(desde, hasta) {
+    var lista = escenas();
+    if (hasta === desde || hasta === desde + 1) return;
+    var e = lista.splice(desde, 1)[0];
+    lista.splice(hasta > desde ? hasta - 1 : hasta, 0, e);
     dibujarLista();
     guardar();
   }
@@ -743,6 +856,7 @@
     });
     quitarDelVisor(e.id);
     API.borrar(base() + e.equirect).catch(function() { /* si no estaba, no importa */ });
+    if (e.original) API.borrar(base() + e.original).catch(function() {});
     guardar();
     var siguiente = lista[Math.min(i, lista.length - 1)];
     irAEscena(siguiente ? siguiente.id : null);
@@ -925,11 +1039,14 @@
     // De a una para no llenar la memoria con fotos gigantes.
     return pendientes.reduce(function(cadena, p) {
       return cadena.then(function() {
-        return prepararFoto(p.archivo, anchoMaximo).then(function(foto) {
+        var ruta = 'panos/' + p.id + '.jpg', foto;
+        return prepararFoto(p.archivo, anchoMaximo).then(function(f) {
           if (estado.slug !== slugTour) throw new Error('Se cambió de tour antes de terminar de subir «' + p.nombre + '».');
-          var ruta = 'panos/' + p.id + '.jpg';
-          return API.escribir(base() + ruta, foto.blob).then(function() {
-            escenas().push({
+          foto = f;
+          return conLogoSiHace(ruta, foto.blob);
+        }).then(function(final) {
+          return API.escribir(base() + ruta, final.blob).then(function() {
+            var escena = {
               id: p.id,
               name: p.nombre,
               equirect: ruta,
@@ -937,7 +1054,9 @@
               initialViewParameters: { yaw: 0, pitch: 0, fov: Math.PI / 2 },
               linkHotspots: [],
               infoHotspots: []
-            });
+            };
+            if (final.original) escena.original = final.original;
+            escenas().push(escena);
             guardar();
           });
         }).catch(function(err) {
@@ -952,6 +1071,229 @@
       });
     }, Promise.resolve());
   }
+
+  // ---------------------------------------------------------------------------
+  // Logo del trípode: difumina el piso bajo la cámara y pone el logo encima.
+  // La foto sin logo queda en nadir/originales/, así se puede cambiar o quitar.
+  // tour.nadir = { logo: 'nadir/logo.png' | null, tamano: grados }
+  // ---------------------------------------------------------------------------
+  var nadir = { logo: null, archivo: null, fuente: null, timer: null };
+
+  function cargarBitmap(url) {
+    return fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('No se encontró ' + url);
+      return r.blob();
+    }).then(createImageBitmap);
+  }
+
+  function leerBytes(url) {
+    return fetch(url).then(function(r) {
+      if (!r.ok) throw new Error('No se encontró ' + url);
+      return r.arrayBuffer();
+    });
+  }
+
+  function lienzoDe(bmp, ancho) {
+    var c = document.createElement('canvas');
+    c.width = ancho || bmp.width;
+    c.height = Math.round(c.width * bmp.height / bmp.width);
+    var ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(bmp, 0, 0, c.width, c.height);
+    return c;
+  }
+
+  function estampar(bmp, logo, tamano) {
+    var c = lienzoDe(bmp);
+    bmp.close();
+    window.Nadir.aplicar(c, logo, tamano);
+    return new Promise(function(ok, mal) {
+      c.toBlob(function(blob) {
+        if (blob) ok(blob); else mal(new Error('No se pudo guardar la foto con el logo.'));
+      }, 'image/jpeg', 0.9);
+    });
+  }
+
+  function rutaOriginal(rutaFoto) { return 'nadir/originales/' + rutaFoto.split('/').pop(); }
+
+  // Foto nueva: si el tour tiene logo, guarda la original y devuelve la estampada.
+  function conLogoSiHace(ruta, blob) {
+    var conf = estado.tour.nadir;
+    if (!conf) return Promise.resolve({ blob: blob, original: null });
+    var original = rutaOriginal(ruta);
+    return API.escribir(base() + original, blob).then(function() {
+      return Promise.all([
+        createImageBitmap(blob),
+        conf.logo ? cargarBitmap('/' + base() + conf.logo) : null
+      ]);
+    }).then(function(r) {
+      return estampar(r[0], r[1], conf.tamano);
+    }).then(function(final) {
+      return { blob: final, original: original };
+    });
+  }
+
+  // Estampa el logo en una escena, siempre a partir de la foto original.
+  function estamparEscena(e, logo, tamano) {
+    var copia = e.original ? Promise.resolve() :
+      leerBytes('/' + base() + e.equirect).then(function(bytes) {
+        return API.escribir(base() + rutaOriginal(e.equirect), bytes);
+      }).then(function() {
+        e.original = rutaOriginal(e.equirect);
+        guardar();
+      });
+    return copia.then(function() {
+      return cargarBitmap('/' + base() + e.original);
+    }).then(function(bmp) {
+      return estampar(bmp, logo, tamano);
+    }).then(function(blob) {
+      return API.escribir(base() + e.equirect, blob);
+    }).then(function() {
+      quitarDelVisor(e.id);
+    });
+  }
+
+  function restaurarEscena(e) {
+    return leerBytes('/' + base() + e.original).then(function(bytes) {
+      return API.escribir(base() + e.equirect, bytes);
+    }).then(function() {
+      API.borrar(base() + e.original).catch(function() {});
+      delete e.original;
+      quitarDelVisor(e.id);
+    });
+  }
+
+  function dibujarVistaNadir() {
+    var vista = $('nadirVista'), ctx = vista.getContext('2d');
+    if (!nadir.fuente) { ctx.clearRect(0, 0, vista.width, vista.height); return; }
+    var tamano = parseInt($('nadirTamano').value, 10);
+    var c = document.createElement('canvas');
+    c.width = nadir.fuente.width;
+    c.height = nadir.fuente.height;
+    c.getContext('2d', { willReadFrequently: true }).drawImage(nadir.fuente, 0, 0);
+    window.Nadir.aplicar(c, nadir.logo, tamano);
+    ctx.drawImage(window.Nadir.vistaAbajo(c, vista.width, Math.max(50, tamano * 2)), 0, 0);
+  }
+
+  function redibujarNadir() {
+    clearTimeout(nadir.timer);
+    nadir.timer = setTimeout(dibujarVistaNadir, 40);
+  }
+
+  function ocupadoNadir(si) {
+    ['nadirAplicar', 'nadirQuitar', 'nadirCancelar', 'nadirArchivo', 'nadirTamano'].forEach(function(id) {
+      $(id).disabled = si;
+    });
+  }
+
+  function cerrarNadir() {
+    $('nadirCaja').hidden = true;
+    nadir.fuente = null;
+    nadir.logo = null;
+    nadir.archivo = null;
+  }
+
+  $('logoNadir').addEventListener('click', function() {
+    var conFoto = escenas().filter(function(e) { return e.equirect; });
+    if (!conFoto.length) return avisar('Primero agregá al menos una foto.', true);
+    if (estado.procesando.length) return avisar('Esperá a que terminen de subirse las fotos.', true);
+    var conf = estado.tour.nadir;
+    var e = escenaActual() && escenaActual().equirect ? escenaActual() : conFoto[0];
+    cerrarNadir();
+    $('nadirTamano').value = conf ? conf.tamano : 20;
+    $('nadirQuitar').hidden = !conf;
+    $('nadirArchivoTexto').textContent = conf && conf.logo ? 'Cambiar logo' : 'Elegir logo (PNG)';
+    $('nadirEstado').textContent = 'Cargando la vista previa…';
+    $('nadirArchivo').value = '';
+    ocupadoNadir(false);
+    $('nadirCaja').hidden = false;
+    dibujarVistaNadir();
+    Promise.all([
+      cargarBitmap('/' + base() + (e.original || e.equirect)).then(function(bmp) {
+        nadir.fuente = lienzoDe(bmp, Math.min(2048, bmp.width));
+        bmp.close();
+      }),
+      conf && conf.logo ? cargarBitmap('/' + base() + conf.logo).then(function(b) { nadir.logo = b; }, function() {}) : null
+    ]).then(function() {
+      $('nadirEstado').textContent = '';
+      dibujarVistaNadir();
+    }, function(err) {
+      $('nadirEstado').textContent = 'No se pudo cargar la vista previa: ' + err.message;
+    });
+  });
+
+  $('nadirArchivo').addEventListener('change', function() {
+    var archivo = this.files[0];
+    if (!archivo) return;
+    createImageBitmap(archivo).then(function(bmp) {
+      nadir.logo = bmp;
+      nadir.archivo = archivo;
+      $('nadirArchivoTexto').textContent = archivo.name;
+      dibujarVistaNadir();
+    }, function() {
+      avisar('No se pudo leer «' + archivo.name + '». Probá con un PNG.', true);
+    });
+  });
+
+  $('nadirTamano').addEventListener('input', redibujarNadir);
+  $('nadirCancelar').addEventListener('click', cerrarNadir);
+
+  $('nadirAplicar').addEventListener('click', function() {
+    var tamano = parseInt($('nadirTamano').value, 10);
+    var logo = nadir.logo, archivo = nadir.archivo;
+    var anterior = estado.tour.nadir;
+    var lista = escenas().filter(function(e) { return e.equirect; });
+    ocupadoNadir(true);
+    var rutaLogo;
+    if (archivo) {
+      rutaLogo = 'nadir/logo.' + (archivo.type === 'image/png' ? 'png' : archivo.type === 'image/webp' ? 'webp' : 'jpg');
+      if (anterior && anterior.logo && anterior.logo !== rutaLogo) API.borrar(base() + anterior.logo).catch(function() {});
+    } else {
+      rutaLogo = logo && anterior ? anterior.logo : null;
+    }
+    (archivo ? API.escribir(base() + rutaLogo, archivo) : Promise.resolve()).then(function() {
+      estado.tour.nadir = { logo: rutaLogo, tamano: tamano };
+      guardar();
+      return lista.reduce(function(cadena, e, i) {
+        return cadena.then(function() {
+          $('nadirEstado').textContent = 'Foto ' + (i + 1) + ' de ' + lista.length + ' («' + e.name + '»)…';
+          return estamparEscena(e, logo, tamano);
+        });
+      }, Promise.resolve());
+    }).then(function() {
+      return guardarYa();
+    }).then(function() {
+      cerrarNadir();
+      irAEscena(estado.actual);
+      avisar(logo ? 'Listo: el logo quedó en las ' + lista.length + ' fotos.' : 'Listo: se difuminó el trípode en las ' + lista.length + ' fotos.');
+    }, function(err) {
+      $('nadirEstado').textContent = 'No se pudo terminar: ' + err.message + '. Podés volver a intentarlo.';
+      ocupadoNadir(false);
+    });
+  });
+
+  $('nadirQuitar').addEventListener('click', function() {
+    if (!confirm('¿Quitar el logo de todas las fotos? Vuelven a quedar como las subiste.')) return;
+    var lista = escenas().filter(function(e) { return e.original; });
+    ocupadoNadir(true);
+    lista.reduce(function(cadena, e, i) {
+      return cadena.then(function() {
+        $('nadirEstado').textContent = 'Foto ' + (i + 1) + ' de ' + lista.length + '…';
+        return restaurarEscena(e);
+      });
+    }, Promise.resolve()).then(function() {
+      API.borrar(base() + 'nadir').catch(function() {});
+      delete estado.tour.nadir;
+      return guardarYa();
+    }).then(function() {
+      cerrarNadir();
+      irAEscena(estado.actual);
+      avisar('Listo: se quitó el logo de las fotos.');
+    }, function(err) {
+      $('nadirEstado').textContent = 'No se pudo terminar: ' + err.message + '. Podés volver a intentarlo.';
+      ocupadoNadir(false);
+    });
+  });
 
   // Arrastrar fotos a la ventana.
   var arrastres = 0;
